@@ -65,9 +65,8 @@ always @(posedge clk_1 or posedge rst) begin
         if (mode) begin
             {g_d, l_d, e_d} <= 3'b000;
             err_d <= 1'b0;
-
+            res_d<=0;
             case (cmd)
-
                 4'b0000: begin
                     if (inp_valid == 2'b11) begin
                         res_d[N:0] <= {1'b0, opa} + {1'b0, opb};
@@ -142,63 +141,48 @@ always @(posedge clk_1 or posedge rst) begin
                     count <= 0;
                 end    
                 4'b1001: begin
-                    if (count == 0) begin
-                        op_latch      <= 4'b1001;
-                        cmd_reg       <= 4'b1001;
-                        opa_1         <= opa;
-                        opb_1         <= opb;
-                        inp_valid_reg <= inp_valid;
-                        res_temp      <= (opa + 1) * (opb + 1);
-                        flag          <= 1;
-                        count         <= count + 1;
+                    if(count==0) begin
+                        res_temp<=(opa+1) * (opb+1);
+                        inp_valid_reg<=inp_valid;
+                        cmd_reg<=cmd;
+                        count<=count+1;
                     end
-                    else if (count == 1) begin
-                        count <= count + 1;
+                    else if(count == 1) begin
+                        if(cmd_reg != cmd) begin
+                            count <= 2;
+                            res_temp<= (opa<<1) * (opb);
+                            inp_valid_reg<=inp_valid;
+                        end
+                        else count<=2;
                     end
-                    else if (count == 2) begin
-                        if (inp_valid_reg == 2'b11)
-                            res_d <= res_temp;
-                        else
-                            err_d <= 1;
-                        opa_1         <= opa;
-                        opb_1         <= opb;
-                        res_temp      <= (opa_1 + 1) * (opb_1 + 1);
-                        inp_valid_reg <= inp_valid;
-                        count         <= 1;
-                        flag          <= 0;
+                    else if(count == 2) begin
+                        res_d<=res_temp;
+                        inp_valid_reg<=inp_valid;
+                        res_temp<= (opa+1) * (opb+1);
+                        count<=(cmd_reg==cmd)?1:0;
                     end
                 end 
                 4'b1010: begin
-                    if (count == 0) begin
-                        op_latch      <= 4'b1010;
-                        cmd_reg       <= 4'b1010;
-                        opa_1         <= opa;
-                        opb_1         <= opb;
-                        inp_valid_reg <= inp_valid;
-                        res_temp      <= (opa << 1) * opb;
-                        flag          <= 1;
-                        count         <= count + 1;
+                    if(count==0) begin
+                        res_temp<=(opa<<1) * (opb);
+                        inp_valid_reg<=inp_valid;
+                        cmd_reg<=cmd;
+                        count<=count+1;
                     end
-                    else if (count == 1) begin
-                        count <= count + 1;
+                    else if(count == 1) begin
+                        if(cmd_reg != cmd) begin
+                            count <= 2;
+                            res_temp<= (opa<<1) * (opb);
+                            inp_valid_reg<=inp_valid;
+                        end
+                        else count<=2;
                     end
-                    else if (count == 2) begin
-                        if (inp_valid_reg == 2'b11) begin
-                            if (op_latch == 4'b1001)
-                                res_d <= (opa_1 + 1) * (opb_1 + 1);
-                            else
-                                res_d <= (opa_1 << 1) * opb_1;
-                            err_d <= 0;
-                        end else err_d <= 1;
-                        opa_1         <= opa;
-                        opb_1         <= opb;
-                        res_temp      <= (op_latch == 4'b1001) ?
-                                         (opa_1 + 1) * (opb_1 + 1) :
-                                         (opa_1 << 1) * opb_1;
-                        inp_valid_reg <= inp_valid;
-                        count         <= 1;
-                        flag          <= 0;
-                    end
+                    else if(count == 2) begin
+                        res_d<=res_temp;
+                        inp_valid_reg<=inp_valid;
+                        res_temp<= (opa+1) * (opb+1);
+                        count<=(cmd_reg==cmd)?1:0;
+                    end 
                 end
                 4'b1011: begin
                     if (inp_valid == 2'b11) begin
@@ -239,7 +223,7 @@ always @(posedge clk_1 or posedge rst) begin
         end
         else begin
             count <= 0;
-            {g_d, l_d, e_d} <= 3'bzzz;
+            {g_d, l_d, e_d} <= 3'b000;
 
             case (cmd)
                 0:  begin if (inp_valid == 2'b11)   begin res_d <= opa & opb;    err_d <= 0; end else err_d <= 1; end
