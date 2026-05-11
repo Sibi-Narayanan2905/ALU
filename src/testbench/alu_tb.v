@@ -83,23 +83,23 @@ module alu_tb;
   integer cmd_idx;
 
   // DUT instantiation
-  ALU_Project #(.N(8), .C(4)) dut (
-      .OPA(operand_a),
-      .OPB(operand_b),
-      .CIN(carry_in),
-      .CLK(clk_sig),
-      .RST(reset_signal),
-      .CMD(command),
-      .CE(clk_en),
-      .MODE(mode_sel),
-      .INP_VALID(input_valid),
-      .COUT(carry_out),
-      .OFLOW(overflow),
-      .RES(result),
-      .G(gt),
-      .L(lt),
-      .E(eq),
-      .ERR(error_flag)
+  alu #(.N(8), .cmd_width(4)) dut (
+      .opa(operand_a),
+      .opb(operand_b),
+      .cin(carry_in),
+      .clk(clk_sig),
+      .rst(reset_signal),
+      .cmd(command),
+      .ce(clk_en),
+      .mode(mode_sel),
+      .inp_valid(input_valid),
+      .cout(carry_out),
+      .oflow(overflow),
+      .res(result),
+      .g(gt),
+      .l(lt),
+      .e(eq),
+      .err(error_flag)
   );
 
   // Clock generator
